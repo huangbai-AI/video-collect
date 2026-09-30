@@ -20,3 +20,14 @@ index.html
 *.jpeg
 *.png
 *.webp
+*.db
+*.db-*
+*.sqlite*
+*.bak*
+.env.*
+cookies*
+*cookies*.txt
+demo-output/
+site/
+dist/
+share/

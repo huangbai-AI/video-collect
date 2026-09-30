@@ -11,12 +11,13 @@ from collections import Counter
 from pathlib import Path
 
 from store import DB_PATH
+from import_links import platform_of, identity, safe_url, ORIGINS, string_list
 
 TEMPLATE = Path(__file__).with_name('unified_library_template.html')
 PLATFORM_NAMES = {
     'instagram': 'Instagram', 'xiaohongshu': '小红书', 'xhs': '小红书',
     'bilibili': 'B 站', 'douyin': '抖音', 'tiktok': 'TikTok', 'x': 'X',
-    'youtube': 'YouTube', 'wechat': '视频号',
+    'youtube': 'YouTube', 'wechat': '视频号', 'feishu': '飞书', 'web': '网页',
 }
 FAVORITES = {'saved', 'fav', 'favorite_collection', 'favorite'}
 
@@ -29,7 +30,7 @@ def post_id(platform: str, url: str) -> str:
         'x': r'/status/(\d+)',
     }
     match = re.search(patterns.get(platform, r'/(?:explore|discovery/item|video)/([^/?#]+)'), url)
-    return match.group(1) if match else url.split('?', 1)[0].rstrip('/').rsplit('/', 1)[-1]
+    return match.group(1) if match else identity(platform, url)
 
 
 def base(platform: str, vid: str) -> dict:
@@ -40,13 +41,14 @@ def base(platform: str, vid: str) -> dict:
         'likes': None, 'comments': None, 'published_at': '', 'captured_at': '',
         'keyword': '', 'url': '', 'video': None, 'poster': None, 'images': [],
         'description': '', 'duration': None, 'media_type': 'video',
-        'status': 'link', 'order': 0, 'month': '', 'kind': '媒体',
+        'status': 'link', 'order': 0, 'month': '', 'kind': '媒体', 'contributors': [],
     }
 
 
 def add_origin(item: dict, name: str) -> None:
-    kind = 'favorite' if name in FAVORITES else 'like' if name in {'liked', 'like'} else 'search'
-    label = {'favorite': '收藏', 'like': '点赞', 'search': '导入'}[kind]
+    name = ORIGINS.get(name, name)
+    kind = 'favorite' if name in FAVORITES else 'like' if name in {'liked', 'like'} else name if name in {'search', 'knowledge'} else 'import'
+    label = {'favorite': '收藏', 'like': '点赞', 'search': '搜索', 'knowledge': '飞书选题库', 'import': '导入'}[kind]
     if kind not in item['origins']:
         item['origins'].append(kind)
     source = f"{item['platform_label']} · {label}"
@@ -55,7 +57,7 @@ def add_origin(item: dict, name: str) -> None:
 
 
 def media_path(archive: Path, value: str | None, output: Path) -> str | None:
-    if not value:
+    if not value or not isinstance(value, str):
         return None
     root = archive.resolve()
     target = (archive / value).resolve()
@@ -71,6 +73,7 @@ def load_database(items: dict[str, dict], db_path: Path) -> None:
     conn.row_factory = sqlite3.Row
     try:
         for row in conn.execute('SELECT * FROM videos ORDER BY first_seen DESC'):
+            safe_url(row['url'])
             platform = 'xiaohongshu' if row['platform'] == 'xhs' else row['platform']
             item = base(platform, row['vid'])
             item.update(url=row['url'] or '', title=row['title'] or '',
@@ -102,7 +105,8 @@ def load_archives(items: dict[str, dict], archives: list[Path], output: Path) ->
             url = row.get('url') or row.get('source') or ''
             if not url:
                 continue
-            platform = row.get('platform') or ('x' if 'x.com/' in url else 'instagram' if 'instagram.com/' in url else 'xiaohongshu' if 'xiaohongshu.com/' in url else 'web')
+            safe_url(url)
+            platform = row.get('platform') or platform_of(url)
             platform = 'xiaohongshu' if platform == 'xhs' else platform
             vid = str(row.get('vid') or post_id(platform, url))
             key = f'{platform}:{vid}'
@@ -124,19 +128,28 @@ def load_archives(items: dict[str, dict], archives: list[Path], output: Path) ->
                 video=video or item['video'], poster=poster or item['poster'],
                 images=images or item['images'],
                 media_type='images' if images else 'video',
+                month=item['month'] or str(row.get('month') or ''),
+                kind=str(row.get('kind') or item['kind']),
             )
+            item['contributors'] = list(dict.fromkeys(item['contributors'] + string_list(row.get('contributors') or row.get('contributor'))))
             item['status'] = 'downloaded' if item['video'] else 'images' if item['images'] else 'link'
-            add_origin(item, row.get('source_type') or row.get('list') or 'import')
+            for origin in string_list(row.get('origins') or row.get('source_type') or row.get('list') or 'import'):
+                add_origin(item, origin)
 
 
 def build(db_path: Path, output: Path, archives: list[Path]) -> dict:
+    if any(archive.resolve() == output.resolve() for archive in archives):
+        raise ValueError('网页输出目录不能与原始归档目录相同')
     output.mkdir(parents=True, exist_ok=True)
     items: dict[str, dict] = {}
     load_database(items, db_path)
     load_archives(items, archives, output)
     for item in items.values():
         stamp = item['captured_at'] or ''
-        item['month'] = stamp[:7] if re.fullmatch(r'20\d{2}-\d{2}', stamp[:7]) else '未标月份'
+        if not item['month']:
+            item['month'] = stamp[:7] if re.fullmatch(r'20\d{2}-(0[1-9]|1[0-2])', stamp[:7]) else '未标月份'
+        elif item['month'] != '未标月份' and not re.fullmatch(r'20\d{2}-(0[1-9]|1[0-2])', item['month']):
+            raise ValueError('归档月份应为 YYYY-MM 或 未标月份')
     catalog = sorted(items.values(), key=lambda x: (x['captured_at'], x['id']), reverse=True)
     data = json.dumps(catalog, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c')
     page = TEMPLATE.read_text(encoding='utf-8').replace('__CATALOG__', data).replace('__SCOPE_NOTICE__', '')

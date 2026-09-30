@@ -38,7 +38,7 @@ class LibraryTest(unittest.TestCase):
             self.assertEqual(result['total'], 1)
             self.assertEqual(result['offline_videos'], 1)
             self.assertEqual(entry['status'], 'downloaded')
-            self.assertEqual(entry['origins'], ['like', 'search'])
+            self.assertEqual(entry['origins'], ['like', 'import'])
             self.assertEqual((output / entry['video']).resolve(), (archive / 'video.mp4').resolve())
             self.assertIn('示例帖子', (output / 'index.html').read_text(encoding='utf-8'))
 

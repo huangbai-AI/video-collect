@@ -1,64 +1,103 @@
-# Video Collect
+# Video Collect · 本地选题中台
 
-把自己在抖音、小红书、Instagram、X 的点赞或收藏内容收进本地资料库，按平台和来源浏览，增量导出新链接。支持小红书图文链接和按需保存图文原图。
+把收藏、点赞、搜索和飞书整理出的选题链接放在一处，按**月份 → 平台 → 来源 → 关键词**浏览。适合个人素材整理，也适合团队交换选题。
 
-这是一个供本地智能助手使用的技能，也可以单独运行脚本。**仓库不包含任何账号数据、Cookie、下载的视频或图片。**
+程序开源，资料保存在你选择的本机目录。仓库仅附虚构演示内容，不包含真实收藏、账号登录信息或下载的视频。
 
-## 安装
+## 三步体验
 
-需要 Python 3.10+。列表采集需要已登录的浏览器；保存小红书图文时另需 `yt-dlp` 和 `curl`。
+安装 Python 3.10 或更新版本。核心功能只用 Python 标准库，无需安装其他依赖。
 
 ```bash
 git clone https://github.com/huangbai-AI/video-collect.git
 cd video-collect
-sh scripts/start.sh
+python3 scripts/library.py demo
 ```
 
-在支持技能目录的助手中，可把本仓库链接或复制到其 `video-collect` 技能目录。具体采集方法见 [SKILL.md](SKILL.md)。
+也可以在 GitHub 点击 **Code → Download ZIP**，解压后在该文件夹执行第三行。Windows 请把命令中的 `python3` 换为 `python`。
 
-## 本地数据
+命令会用默认浏览器打开带 4 条虚构选题的网页。演示库独立保存，不会读取你的个人采集库。
 
-默认写入 `~/.local/share/video-collect/`。可通过环境变量更改：
+## 导入自己的内容
+
+支持 UTF-8 CSV、JSON 条目数组，以及 `{ "items": [...] }`。可以导入飞书表格导出的 CSV；原生文档须先整理成标题与链接，本版不会自动遍历整个飞书知识库。
+
+CSV 至少包含 `标题` 和 `链接`；可增加 `月份`、`平台`、`来源`、`收录人`、`文案`、`作者`、`点赞数`、`发布时间`、`抓取时间`。参见 [可直接修改的示例表格](examples/topics.csv)。
 
 ```bash
-export VC_DATA_DIR="$HOME/MyVideoCollectData"
-python3 scripts/store.py stats
+python3 scripts/library.py import "我的选题.csv" --contributor "同学甲"
 ```
 
-数据库以“平台＋帖子 ID”去重，同一帖子同时出现在点赞和收藏时会合并来源。`export-new` 另记导出历史，避免下次重复交付。
+导入后自动生成并打开网页。重复链接会合并来源和收录人；保留首次导入的标题及月份。对于主流平台按帖子编号去重，普通网页按完整网址区分。
+
+**月份优先使用表格中指定的月份**，例如 `2026-09`；未指定时取首次收录月份。抓取时间不能冒充点赞或收藏时间。
+
+再次打开：
+
+```bash
+python3 scripts/library.py open
+```
+
+## 团队怎么一起用
+
+1. 每位同学在自己的电脑导入资料或采集自己的收藏。
+2. 在网页按月份、平台等条件选出要分享的内容，点击 **导出筛选结果**。
+3. 将导出的 JSON 文件通过团队已有的私有渠道发给同事。
+4. 同事用同一条 `library.py import` 命令导入，或交给一位维护人汇总成团队库。
+
+导出包含**全部符合筛选条件的条目**，不受每批显示 80 条的限制。仅包含标题、原帖链接、月份、平台、来源、收录人、类型，不包含正文、视频、登录信息或本机文件路径。原帖链接可能带访问参数，因此导出内容仍应在有权限的团队范围内共享。
+
+这是本地工具，**当前没有在线账号、多人实时编辑或权限管理**。生成的网页内含完整资料，不能直接提交到公开仓库或公开网站。需要团队统一网页时，先汇总链接，再放到已有登录保护的内部环境。
+
+## 保存位置与外置硬盘
+
+默认采集数据库和导入记录位于 `~/.local/share/video-collect/`，网页位于 `~/video-collect-site/`。可自定义网页位置：
+
+```bash
+python3 scripts/library.py build --output "/你的存储目录/选题网页"
+```
+
+用环境变量 `VC_DATA_DIR` 指定数据目录；后续导入、生成都应使用同一设置。`--output` 自定义过后，再次 `open` 时也传同一位置。
+
+已有视频或图文归档可以合并展示：
+
+```bash
+python3 scripts/library.py build --archive "/你的存储目录/视频归档"
+```
+
+`--archive` 可以重复指定。归档目录需有 `catalog.json`，其条目格式见 [导入与媒体格式](docs/data-format.md)。网页只引用实际存在的媒体文件，不重复复制。外置盘断开后链接仍可查看，离线媒体须接回硬盘才能播放。目录移动后重新生成网页。
+
+## 收藏与点赞采集
+
+可作为本地智能助手的技能使用，也可运行独立脚本。完整操作见 [SKILL.md](SKILL.md)。采集功能需要浏览器登录，且依赖平台当前页面结构；本次发布未重新实测所有平台在线列表。
+
+| 平台 | 现有采集方式 |
+|---|---|
+| 抖音 | 点赞、收藏页面脚本 |
+| 小红书 | 点赞、收藏页面脚本；含图文链接 |
+| Instagram | 已保存页面脚本；点赞可见卡片解析 |
+| X | 浏览器读取链接后导入，无自动整月采集器 |
+| TikTok | 可以导入链接；没有列表采集器 |
+
+只处理自己有权访问的内容。遇到验证、访问限制或登录异常立即停止。登录态留在本机，不上传到 GitHub。小红书图文保存脚本另需 `yt-dlp` 和 `curl`；本版不会自动下载视频，也不会自动删除旧媒体。
+
+采集库仍支持增量导出，避免每轮重复导出已经交付的记录：
 
 ```bash
 python3 scripts/store.py export-new
-python3 scripts/store.py export
-python3 scripts/build_unified_library.py --output "$HOME/video-collect-site"
+python3 scripts/store.py export-history
+python3 scripts/library.py build
 ```
 
-打开 `~/video-collect-site/index.html` 即可看本地选题网页。网页里只有链接的条目需要联网打开原帖。已有媒体归档可用 `--archive` 添加，例如：
-
-```bash
-python3 scripts/build_unified_library.py \
-  --output "$HOME/video-collect-site" \
-  --archive "$HOME/video-archives/instagram"
-```
-
-媒体目录中的 `catalog.json` 应为条目数组。每条至少有 `platform`、`vid`、`url`；可选 `title`、`author`、`likes`、`published_at`、`captured_at`，以及指向同一归档目录内文件的相对路径 `video`、`poster`、`images`。生成器只引用原文件，不复制。
-
-## 现有支持
-
-| 平台 | 列表 | 状态 |
-|---|---|---|
-| 抖音 | 点赞、收藏 | 页面脚本 |
-| 小红书 | 点赞、收藏，含图文 | 页面脚本 |
-| Instagram | 已保存、点赞 | 页面脚本或可见卡片解析 |
-| X | 点赞视频 | 浏览器读取后用 JSON 入库 |
-| TikTok | 点赞、收藏 | 暂未实现 |
-
-页面结构可能变化。只处理自己账号可见的列表；碰到验证或访问限制时停止，不尝试绕过。请尊重平台规则和原作者权益。
-
-## 检查
+## 开发与反馈
 
 ```bash
 python3 -m unittest discover -s tests -v
+node tests/test_ui.cjs
 ```
 
-代码采用 [MIT 许可证](LICENSE)。
+第二条用于检查页面筛选、搜索、逐批显示和共享导出逻辑，开发时需安装 Node.js；日常使用不需要。自动检查覆盖 macOS、Windows、Linux，实际平台采集仍需登录后人工确认。
+
+反馈问题请附操作步骤和脱敏示例，不要上传真实收藏或 Cookie。参见 [参与开发](CONTRIBUTING.md)。
+
+代码使用 [MIT 许可证](LICENSE)。
