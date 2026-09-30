@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import re
+import sys
 import tempfile
 from datetime import datetime
 from pathlib import Path
@@ -28,6 +29,12 @@ ORIGINS = {'收藏': 'favorite', '收藏夹': 'favorite', 'fav': 'favorite',
            'saved': 'favorite', 'favorite_collection': 'favorite',
            '点赞': 'like', 'liked': 'like', '搜索': 'search',
            '飞书选题库': 'knowledge', '知识库': 'knowledge', '导入': 'import'}
+
+
+def configure_output():
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, 'reconfigure'):
+            stream.reconfigure(encoding='utf-8')
 
 
 def platform_of(url: str) -> str:
@@ -160,6 +167,7 @@ def import_file(source: Path, archive: Path, contributor='') -> dict:
 
 
 if __name__ == '__main__':
+    configure_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('file', type=Path)
     parser.add_argument('--out', type=Path, required=True)

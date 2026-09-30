@@ -11,7 +11,7 @@ from collections import Counter
 from pathlib import Path
 
 from store import DB_PATH
-from import_links import platform_of, identity, safe_url, ORIGINS, string_list
+from import_links import platform_of, identity, safe_url, ORIGINS, string_list, configure_output
 
 TEMPLATE = Path(__file__).with_name('unified_library_template.html')
 PLATFORM_NAMES = {
@@ -168,6 +168,7 @@ def build(db_path: Path, output: Path, archives: list[Path]) -> dict:
 
 
 if __name__ == '__main__':
+    configure_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--db', type=Path, default=Path(DB_PATH))
     parser.add_argument('--output', type=Path, required=True)

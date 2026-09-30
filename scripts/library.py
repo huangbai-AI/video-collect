@@ -7,11 +7,12 @@ import webbrowser
 from pathlib import Path
 
 from build_unified_library import build
-from import_links import import_file
+from import_links import import_file, configure_output
 from store import DATA_DIR, DB_PATH
 
 
 def main():
+    configure_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['demo', 'import', 'build', 'open'])
     parser.add_argument('file', nargs='?', type=Path)

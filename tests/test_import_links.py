@@ -1,4 +1,6 @@
 import json
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -10,6 +12,16 @@ from build_unified_library import build, media_path
 
 
 class ImportTest(unittest.TestCase):
+    def test_demo_on_non_utf8_console(self):
+        repo = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as temp:
+            result = subprocess.run([sys.executable, str(repo / 'scripts/library.py'),
+                                     'demo', '--output', temp, '--no-open'],
+                                    env={**os.environ, 'PYTHONIOENCODING': 'ascii'},
+                                    capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr.decode('utf-8'))
+            self.assertIn('网页', result.stdout.decode('utf-8'))
+
     def test_chinese_csv_and_repeat_preserve_month_and_merge_contributors(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
