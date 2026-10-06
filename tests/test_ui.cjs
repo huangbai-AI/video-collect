@@ -75,3 +75,28 @@ assert.equal(elements['sync-start'].disabled,false);
 vm.runInContext('syncRemote.synced=[items[1].id];addSync(items[1])',context);
 assert.equal(vm.runInContext('syncQueue.length',context),1);
 console.log('候选加入、去重、分类、已同步提示检查通过');
+
+vm.runInContext('selectedSync.add("2");selectedSync.add("3");updateBulk()',context);
+assert.equal(elements['bulk-bar'].hidden,false);
+assert.equal(elements['bulk-count'].textContent,'已选择 2 条');
+assert.equal(elements['select-all'].indeterminate,true);
+elements['select-all'].checked=true;elements['select-all'].onchange();
+assert.equal(vm.runInContext('selectedSync.size',context),99); // includes unloaded rows, excludes synced item
+assert.equal(elements['select-all'].checked,true);
+vm.runInContext("month='2026-08';render()",context);
+elements['select-all'].checked=false;elements['select-all'].onchange();
+assert.equal(vm.runInContext('selectedSync.size',context),89); // other month selections survive
+assert.equal(vm.runInContext('selectedSync.has("99")',context),false);
+elements['bulk-clear'].onclick();
+assert.equal(elements['bulk-bar'].hidden,true);
+assert.match(page,/\.bulk-bar\[hidden\]\{display:none\}/);
+assert.ok(!page.includes("syncButton.onclick=()=>addSync(x)"));
+console.log('多选、未展开条目全选、已同步排除、跨筛选保留与取消选择检查通过');
+(async()=>{
+ vm.runInContext(`var sentBatches=[];syncApi=async(path,options)=>{if(options){const rows=JSON.parse(options.body).items;sentBatches.push(rows);return {state:'done',results:rows.map(x=>({id:x.id,screenshot:true}))}}return {configured:true,synced:[]}}`,context);
+ await vm.runInContext('startSyncRows(Array.from({length:120},(_,i)=>({id:String(i),category:"AI Coding",content:"案例"})))',context);
+ assert.deepEqual(JSON.parse(vm.runInContext('JSON.stringify(sentBatches.map(x=>x.length))',context)),[50,50,20]);
+ assert.equal(elements['sync-feedback'].textContent,'已处理 120 条。');
+ assert.equal(vm.runInContext('syncBusy',context),false);
+ console.log('一次点击分批同步全部120条检查通过');
+})().catch(error=>{console.error(error);process.exitCode=1});
