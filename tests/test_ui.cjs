@@ -100,3 +100,7 @@ console.log('多选、未展开条目全选、已同步排除、跨筛选保留�
  assert.equal(vm.runInContext('syncBusy',context),false);
  console.log('一次点击分批同步全部120条检查通过');
 })().catch(error=>{console.error(error);process.exitCode=1});
+
+assert.match(page, /class="bottom-actions"><aside id="post-bar"/);
+assert.match(page, /flex-direction:column;gap:10px/);
+assert.match(page, /ResizeObserver\(updateActionSpace\)/);
