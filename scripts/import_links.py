@@ -104,6 +104,8 @@ def normalize(row: dict, contributor='', now=None) -> dict:
         'month': month, 'captured_at': captured, 'origins': origins,
         'contributors': people, 'kind': str(first(row, 'kind', '类型', default='选题'))[:40],
         'likes': first(row, 'likes', '点赞数', default=None),
+        'likes_label': str(first(row, 'likes_label'))[:40],
+        'published_label': str(first(row, 'published_label'))[:100],
         'published_at': str(first(row, 'published_at', '发布时间')),
         'description': str(first(row, 'description', 'caption', '文案'))[:20000],
         'keyword': str(first(row, 'keyword', '关键词'))[:1000],

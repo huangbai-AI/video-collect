@@ -120,6 +120,8 @@ def load_archives(items: dict[str, dict], archives: list[Path], output: Path) ->
                 author=row.get('author_display') or row.get('author') or item['author'],
                 likes=row.get('likes') if row.get('likes') is not None else item['likes'],
                 comments=row.get('comments'),
+                likes_label=row.get('likes_label') or item.get('likes_label', ''),
+                published_label=row.get('published_label') or item.get('published_label', ''),
                 published_at=row.get('published_at') or item['published_at'],
                 captured_at=row.get('captured_at') or item['captured_at'],
                 keyword=row.get('keyword') or item['keyword'],

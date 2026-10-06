@@ -8,6 +8,14 @@ from build_unified_library import build
 from store import DATA_DIR,DB_PATH
 KEYWORDS=['AI 视频','AI','AI教程','AI工具','Coding','编程','Vibe Coding','AI 视频教程','AIGC','AI 设计']
 
+def verified_week_filter(row):
+    debug=row.get('search_debug') or {}
+    if debug.get('ui_filter_full_applied') is not True:return False
+    if row.get('platform')=='xiaohongshu':return True
+    if row.get('platform')=='douyin':
+        return all(name in debug.get(key,'') and 'HjptjtzN' in debug.get(key,'') for key,name in [('sort_evidence','最多点赞'),('week_evidence','一周内')])
+    return False
+
 def qualify(row,now,min_likes=2000,days=7):
     try: likes=int(row.get('likes'))
     except (TypeError,ValueError): return '点赞数未知'
@@ -21,7 +29,7 @@ def qualify(row,now,min_likes=2000,days=7):
             if published.tzinfo is None: published=published.replace(tzinfo=now.tzinfo)
         except ValueError:return '发布时间无法识别'
         if not now-timedelta(days=days)<=published<=now:return '不在时间范围'
-    elif not (row.get('platform')=='xiaohongshu' and debug.get('ui_filter_full_applied') is True):
+    elif not verified_week_filter(row):
         return '缺少发布时间或已生效的时间筛选证据'
     return None
 
