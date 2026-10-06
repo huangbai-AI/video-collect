@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "选题中台 · 顺序预加载",
+  "version": "1.0.0",
+  "description": "按当前资料列表，低频预先打开后五个原帖，沿用浏览器登录态。",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuPfE9iTXuWbKTXzRY9fqe9B1LKyIdnKzMIRvKmKn9LQGCzFHktpLDo/GUrD7EBtIHmsqDzzyNnkTK//mpdlQxu+L49Fj4Bfl3WxmqeirbQP1oTIGKwbq9Y1LNW6THp6utdO6Kz/SaBYzhvvC7IqPAsOHbi4qIJXGFHQuTlyjxlqwGSHzT2zql0QdmPyiDDHefVoAG7ATkXhOLQ2wgVeZLv9m/SU7d5mk1KpHseb6Tb+41YcMqVUAubtIsQyP6TSrxH5Fl4csJzb8HtaqfzR4Kb+G6WkicmpiulbltYCI2oxXY9obmuJ729uh2Qx2rLJRcHziBhZt9vw2oTrH6sK5LQIDAQAB",
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "externally_connectable": {
+    "matches": [
+      "http://127.0.0.1/*",
+      "http://localhost/*"
+    ]
+  }
+}

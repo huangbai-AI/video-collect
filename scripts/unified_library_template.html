@@ -34,7 +34,7 @@ __SCOPE_NOTICE__
 <div class="breakdown" id="breakdown"></div>
 <section class="search-panel" role="search"><label for="search">关键词搜索</label><div class="search-row"><input id="search" type="search" placeholder="输入标题或文案里的词" autocomplete="off"><button id="clear-search" type="button">清空</button></div><small>搜索标题、已收录的文案、作者、收录人和原关键词；多个词用空格隔开。</small></section>
 <nav class="filters" id="platform-filters" aria-label="平台筛选"></nav>
-<div class="toolbar"><select id="origin" aria-label="获取来源"><option value="all">全部获取来源</option><option value="search">搜索</option><option value="favorite">收藏夹</option><option value="like">点赞</option><option value="knowledge">飞书选题库</option><option value="import">导入</option></select><select id="kind" aria-label="类型"><option value="all">全部类型</option><option value="媒体">媒体</option><option value="选题">选题</option><option value="参考链接">参考链接</option><option value="文档">文档</option><option value="排期">排期</option></select><select id="media" aria-label="离线状态"><option value="all">全部内容</option><option value="downloaded">离线视频</option><option value="images">离线图文</option><option value="link">仅链接</option></select><select id="sort" aria-label="排序"><option value="captured">月份内按抓取时间</option><option value="likes">月份内按点赞数</option><option value="order">月份内按归档顺序</option></select><span class="result" id="result"></span></div>
+<div class="toolbar"><label class="low-filter"><input id="sequence-preload" type="checkbox" checked>顺序预加载后5条</label><small id="preload-info">本地视频预加载已开启；原帖需启用浏览器小助手</small><select id="origin" aria-label="获取来源"><option value="all">全部获取来源</option><option value="search">搜索</option><option value="favorite">收藏夹</option><option value="like">点赞</option><option value="knowledge">飞书选题库</option><option value="import">导入</option></select><select id="kind" aria-label="类型"><option value="all">全部类型</option><option value="媒体">媒体</option><option value="选题">选题</option><option value="参考链接">参考链接</option><option value="文档">文档</option><option value="排期">排期</option></select><select id="media" aria-label="离线状态"><option value="all">全部内容</option><option value="downloaded">离线视频</option><option value="images">离线图文</option><option value="link">仅链接</option></select><select id="sort" aria-label="排序"><option value="captured">月份内按抓取时间</option><option value="likes">月份内按点赞数</option><option value="order">月份内按归档顺序</option></select><span class="result" id="result"></span></div>
 <div class="table-wrap"><table><thead><tr><th>#</th><th>封面</th><th>标题 / 作者</th><th>平台</th><th>获取来源</th><th>搜索关键词</th><th>点赞</th><th>发布时间</th><th>抓取时间</th><th>状态</th><th>原帖</th></tr></thead><tbody id="rows"></tbody></table><div class="empty" id="empty" hidden>没有符合条件的内容</div></div><div class="more-wrap" id="more-wrap" hidden><button id="show-more" type="button">继续显示</button></div>
 <details class="library-notes"><summary>资料说明</summary><p>封面标有 ▶ 的视频和标有“图”的笔记可离线打开；“仅链接”用同一浏览器的大浮窗打开原帖，可在资料页切换上一条、下一条。抓取时间不是点赞或收藏时间。导出筛选结果会包含所有匹配条目的标题、链接、月份、来源和收录人，不限于当前显示的 80 条。导出文件不包含视频、正文和本机文件路径，但原帖链接可能带访问参数，请仅分享给有权限的同事。</p></details>
 </section></div></main>
@@ -42,7 +42,7 @@ __SCOPE_NOTICE__
 <dialog id="viewer"><header class="viewer-head"><div><div class="viewer-label" id="viewer-label"></div><h2 id="viewer-title"></h2></div><button class="close" id="close" aria-label="关闭">×</button></header><div class="viewer-body"><div class="player"><video id="video" controls playsinline preload="metadata"></video><img id="photo" class="hidden" alt="图文图片"></div><aside class="details"><dl><div class="wide"><dt>原帖作者</dt><dd id="viewer-author"></dd></div><div><dt>点赞数</dt><dd id="viewer-likes"></dd></div><div><dt>评论数</dt><dd id="viewer-comments"></dd></div><div><dt>时长／图片数</dt><dd id="viewer-length"></dd></div><div class="wide"><dt>发布时间</dt><dd id="viewer-published"></dd></div><div class="wide"><dt>抓取时间</dt><dd id="viewer-captured"></dd></div><div class="wide"><dt>获取来源</dt><dd id="viewer-origin"></dd></div></dl><p class="note" id="viewer-description"></p><a id="viewer-source" class="source-button" target="_blank" rel="noopener noreferrer">打开原帖 ↗</a><div class="nav"><button id="previous" type="button">↑ 上一条</button><button id="next" type="button">↓ 下一条</button></div><p class="hint">按 ↑ ↓ 切换；在弹窗外滚动也可切换。图文可逐张浏览。</p></aside></div></dialog>
 <script id="catalog" type="application/json">__CATALOG__</script>
 <script>
-const items=JSON.parse(document.getElementById('catalog').textContent),byId=id=>document.getElementById(id),viewer=byId('viewer'),video=byId('video'),photo=byId('photo');
+const items=JSON.parse(document.getElementById('catalog').textContent),byId=id=>document.getElementById(id),viewer=byId('viewer'),photo=byId('photo');let video=byId('video');
 let platform='all',visible=[],viewable=[],index=-1,photoIndex=0,wheel=0,wheelLocked=false,wheelTimer;
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e};
 const number=x=>{if(x===null||x===undefined||x==='')return '—';const n=Number(x);return Number.isFinite(n)?new Intl.NumberFormat('zh-CN').format(n):String(x)};
@@ -65,35 +65,58 @@ function updateTotals(){
   breakdown.replaceChildren();for(const [o,n] of Object.entries(originCounts)){if(!n)continue;const span=el('span');span.append(labels[o]+' ',el('b',number(n)));breakdown.append(span)}
   platformBar.replaceChildren();for(const [p,n] of [['all',current.length],...Array.from(platformCounts).sort((a,b)=>b[1]-a[1])]){const b=el('button',(p==='all'?'全部平台':(items.find(x=>x.platform===p)?.platform_label||({xiaohongshu:'小红书',douyin:'抖音',x:'X',instagram:'Instagram',tiktok:'TikTok'})[p]||p))+' '+n,'filter'+(p===platform?' active':''));b.type='button';b.setAttribute('aria-pressed',p===platform?'true':'false');b.onclick=()=>{platform=p;render()};platformBar.append(b)}
 }
-function show(){const x=viewable[index];if(!x)return;video.pause();video.removeAttribute('src');photo.classList.add('hidden');video.classList.remove('hidden');byId('viewer-label').textContent=`${x.platform_label} · ${x.source_names.join('、')} · ${index+1}/${viewable.length}`;byId('viewer-title').textContent=x.title||'未命名';byId('viewer-author').textContent=x.author||'—';byId('viewer-likes').textContent=x.likes_label||number(x.likes);byId('viewer-comments').textContent=number(x.comments);byId('viewer-length').textContent=length(x);byId('viewer-published').textContent=x.published_at||x.published_label||'未提供';byId('viewer-captured').textContent=x.captured_at||'未提供';byId('viewer-origin').textContent=x.source_names.join('、')||'—';byId('viewer-description').textContent=x.description||'';byId('viewer-source').href=x.url;byId('previous').disabled=index===0&&(!x.images.length||photoIndex===0);byId('next').disabled=index===viewable.length-1&&(!x.images.length||photoIndex===x.images.length-1);
+function show(){const x=viewable[index];if(!x)return;video.pause();photo.classList.add('hidden');video.classList.remove('hidden');byId('viewer-label').textContent=`${x.platform_label} · ${x.source_names.join('、')} · ${index+1}/${viewable.length}`;byId('viewer-title').textContent=x.title||'未命名';byId('viewer-author').textContent=x.author||'—';byId('viewer-likes').textContent=x.likes_label||number(x.likes);byId('viewer-comments').textContent=number(x.comments);byId('viewer-length').textContent=length(x);byId('viewer-published').textContent=x.published_at||x.published_label||'未提供';byId('viewer-captured').textContent=x.captured_at||'未提供';byId('viewer-origin').textContent=x.source_names.join('、')||'—';byId('viewer-description').textContent=x.description||'';byId('viewer-source').href=x.url;byId('previous').disabled=index===0&&(!x.images.length||photoIndex===0);byId('next').disabled=index===viewable.length-1&&(!x.images.length||photoIndex===x.images.length-1);
 if(x.status==='images'){video.classList.add('hidden');photo.classList.remove('hidden');photo.src=x.images[photoIndex];photo.alt=`${x.title}，第 ${photoIndex+1} 张，共 ${x.images.length} 张`;byId('viewer-label').textContent+=` · 图片 ${photoIndex+1}/${x.images.length}`}
-else{video.poster=x.poster||'';video.src=x.video;video.load();video.play().catch(()=>{})}}
+else{const ready=localPrepared.get(x.id);if(ready?.tagName==='VIDEO'){localPrepared.delete(x.id);video.removeAttribute('src');video.load();ready.id='video';ready.controls=true;ready.muted=video.muted;video.replaceWith(ready);video=ready}else if(video.getAttribute('src')!==x.video){video.src=x.video;video.load()}video.poster=x.poster||'';video.play().catch(()=>{})}prepareLocalSequence()}
 let postWindow=null,postList=[],postIndex=-1;
+
+const PRELOAD_HELPER='aacpdhobbpijpalnglbapfpbmhmjaojj';
+let helperAvailable=false,helperPolling=null,remoteVersion=0;
+const localPrepared=new Map();
+const preloadPool=document.createElement("div");preloadPool.hidden=true;preloadPool.id="preload-pool";document.body.append(preloadPool);
+function preloadEnabled(){return byId('sequence-preload').checked!==false}
+function helperMessage(message){return new Promise(resolve=>{try{const runtime=window.chrome?.runtime;if(!runtime?.sendMessage){resolve(null);return}runtime.sendMessage(PRELOAD_HELPER,message,response=>{if(runtime.lastError){resolve(null);return}resolve(response)})}catch{resolve(null)}})}
+helperMessage({action:'hello'}).then(v=>{helperAvailable=!!v?.ok;if(helperAvailable)byId('preload-info').textContent='已连接：原帖和本地视频都可顺序预加载后5条'});
+async function launchCachedPost(x){const version=++remoteVersion;const next=preloadEnabled()?postList.slice(postIndex+1,postIndex+6).filter(v=>trustedPost(v.url)).map(v=>v.url):[];
+ const result=await helperMessage({action:'open',current:x.url,next});if(version!==remoteVersion)return;
+ if(!result?.ok){byId('post-status').textContent='预加载助手未响应，请点击“直接打开”浏览原帖。';return}
+ byId('post-status').textContent=`后台已准备 ${result.ready}/${result.total} 条；每隔7秒准备下一条，切换会复用已打开页面。`;
+ clearInterval(helperPolling);helperPolling=setInterval(async()=>{const s=await helperMessage({action:'status'});if(version!==remoteVersion||byId('post-bar').hidden)return;if(s?.ok)byId('post-status').textContent=`后台已准备 ${s.ready}/${s.total} 条；在资料页按 ↑ ↓ 切换。页面已加载不代表视频已全部缓冲。`},2500);
+}
+function clearLocalPrepared(){for(const media of localPrepared.values()){if(media.tagName==='VIDEO'){media.removeAttribute('src');media.load()}media.remove()}localPrepared.clear()}
+function prepareLocalSequence(){if(!preloadEnabled()){clearLocalPrepared();return}const next=viewable.slice(index+1,index+6);const ids=new Set(next.map(x=>x.id));for(const [id,media] of localPrepared){if(!ids.has(id)){if(media.tagName==='VIDEO'){media.removeAttribute('src');media.load()}media.remove();localPrepared.delete(id)}}
+ for(const x of next){if(localPrepared.has(x.id))continue;const source=x.status==='images'?x.images?.[0]:x.video;if(!source)continue;let u;try{u=new URL(source,window.location.href)}catch{continue}if(u.origin!==window.location.origin)continue;
+ const media=document.createElement(x.status==='images'?'img':'video');if(media.tagName==='VIDEO'){media.preload='auto';media.muted=true;media.playsInline=true}media.src=source;localPrepared.set(x.id,media);preloadPool.append(media);if(media.tagName==='VIDEO')media.load();
+ }}
+byId('sequence-preload').onchange=()=>{if(!preloadEnabled()){clearLocalPrepared();void helperMessage({action:'stop'});byId('preload-info').textContent='顺序预加载已关闭'}else byId('preload-info').textContent=helperAvailable?'顺序预加载后5条已开启':'本地视频预加载已开启；原帖需启用浏览器小助手';if(viewer.open)prepareLocalSequence();if(!byId('post-bar').hidden&&helperAvailable)launchPost()};
+
 function trustedPost(url){try{const h=new URL(url).hostname;return ['douyin.com','xiaohongshu.com','xhslink.com','x.com','twitter.com','instagram.com','tiktok.com','bilibili.com','b23.tv','youtube.com','youtu.be'].some(d=>h===d||h.endsWith('.'+d))}catch(e){return false}}
 function newPostWindow(url,features){const w=window.open('about:blank','video_collect_reference',features);if(w){w.location.href=url;w.focus()}return w}
 function launchPost(){
  const x=postList[postIndex];if(!x)return;
  const width=Math.min(1280,window.screen?.availWidth||1280),height=Math.min(900,window.screen?.availHeight||900);
  const standalone=!trustedPost(x.url);
+ const cached=helperAvailable&&!standalone;
  try{
-  if(standalone){window.open(x.url,'_blank','noopener')}
+  if(cached){void launchCachedPost(x)}
+  else if(standalone){window.open(x.url,'_blank','noopener')}
   else if(postWindow&&!postWindow.closed){postWindow.location.href=x.url;postWindow.focus()}
   else postWindow=newPostWindow(x.url,`popup=yes,width=${width},height=${height},resizable=yes,scrollbars=yes`);
  }catch(e){postWindow=newPostWindow(x.url,`popup=yes,width=${width},height=${height},resizable=yes,scrollbars=yes`)}
  byId('post-bar').hidden=false;byId('post-title').textContent=x.title||'未命名';
  byId('post-meta').textContent=`${x.platform_label} · ${x.author||'作者未提供'} · ${postIndex+1}/${postList.length}`;
  byId('post-direct').href=x.url;byId('post-prev').disabled=postIndex<=0;byId('post-next').disabled=postIndex>=postList.length-1;
- byId('post-status').textContent=standalone?'此链接在独立标签页打开；仍可在资料页切换。':postWindow?'在资料页按 ↑ ↓ 或点按钮切换。原帖沿用当前浏览器的账号；平台限制可能导致另开窗口。':'浏览器阻止了浮窗，请允许此站点弹窗，或点击“直接打开”。';
+ byId('post-status').textContent=cached?'正在切换到已准备的原帖…':standalone?'此链接在独立标签页打开；仍可在资料页切换。':postWindow?'在资料页按 ↑ ↓ 或点按钮切换。原帖沿用当前浏览器的账号；平台限制可能导致另开窗口。':'浏览器阻止了浮窗，请允许此站点弹窗，或点击“直接打开”。';
 }
 function openPost(x){postList=visible.slice();postIndex=postList.findIndex(v=>v.id===x.id);if(postIndex<0){postList=[x];postIndex=0}launchPost()}
 function shiftPost(delta){const next=postIndex+delta;if(next<0||next>=postList.length)return;postIndex=next;launchPost()}
 byId('post-prev').onclick=()=>shiftPost(-1);byId('post-next').onclick=()=>shiftPost(1);
-byId('post-close').onclick=()=>{byId('post-bar').hidden=true;postIndex=-1};
+byId('post-close').onclick=()=>{byId('post-bar').hidden=true;postIndex=-1;remoteVersion++;clearInterval(helperPolling);void helperMessage({action:'stop'})};
 document.addEventListener('keydown',e=>{if(viewer.open||byId('post-bar').hidden||e.altKey||e.ctrlKey||e.metaKey||['INPUT','TEXTAREA','SELECT'].includes(e.target?.tagName))return;if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();shiftPost(e.key==='ArrowDown'?1:-1)}});
 byId('viewer-source').onclick=e=>{e.preventDefault();const x=viewable[index];closeViewer();if(x)openPost(x)};
 function openItem(x){if(x.status==='link'){openPost(x);return}index=viewable.findIndex(v=>v.id===x.id);if(index<0)return;photoIndex=0;if(!viewer.open)viewer.showModal();show()}
 function shift(delta){if(!viewer.open)return;const x=viewable[index];if(x.status==='images'&&photoIndex+delta>=0&&photoIndex+delta<x.images.length){photoIndex+=delta;show();return}const next=index+delta;if(next<0||next>=viewable.length)return;index=next;photoIndex=delta<0&&viewable[index].status==='images'?viewable[index].images.length-1:0;show()}
-function closeViewer(){video.pause();video.removeAttribute('src');video.load();photo.removeAttribute('src');viewer.close();wheel=0;wheelLocked=false;clearTimeout(wheelTimer)}
+function closeViewer(){clearLocalPrepared();video.pause();video.removeAttribute('src');video.load();photo.removeAttribute('src');viewer.close();wheel=0;wheelLocked=false;clearTimeout(wheelTimer)}
 byId('close').onclick=closeViewer;byId('previous').onclick=()=>shift(-1);byId('next').onclick=()=>shift(1);viewer.addEventListener('cancel',e=>{e.preventDefault();closeViewer()});viewer.addEventListener('click',e=>{if(e.target===viewer)closeViewer()});document.addEventListener('keydown',e=>{if(!viewer.open||e.altKey||e.ctrlKey||e.metaKey)return;if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();shift(e.key==='ArrowDown'?1:-1)}});window.addEventListener('wheel',e=>{if(!viewer.open)return;const r=viewer.getBoundingClientRect();if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)return;e.preventDefault();clearTimeout(wheelTimer);wheelTimer=setTimeout(()=>{wheel=0;wheelLocked=false},350);if(wheelLocked)return;wheel+=e.deltaY;if(Math.abs(wheel)<50)return;shift(wheel>0?1:-1);wheel=0;wheelLocked=true},{passive:false});
 const normalizeSearch=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
 const searchIndex=new Map(items.map(x=>[x.id,normalizeSearch([x.title,x.description,x.author,x.keyword,x.month,x.kind,(x.contributors||[]).join(' ')].join(' '))]));

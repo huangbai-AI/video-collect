@@ -115,3 +115,7 @@ node tests/test_ui.cjs
 反馈问题请附操作步骤和脱敏示例，不要上传真实收藏或 Cookie。参见 [参与开发](CONTRIBUTING.md)。
 
 代码使用 [MIT 许可证](LICENSE)。
+
+## 顺序预加载
+
+网页默认预加载后 5 条本地视频或图文，按当前筛选结果顺序切换。外部原帖需要可选的 [Chrome 预加载小助手](browser-preloader/README.md)，安装后复用当前浏览器登录态，静音、逐条准备后 5 页。小助手安装需先获得使用者确认。
