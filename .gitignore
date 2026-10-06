@@ -31,3 +31,8 @@ demo-output/
 site/
 dist/
 share/
+
+# 私有搜索输出
+private-round/
+search_results.json
+review.json

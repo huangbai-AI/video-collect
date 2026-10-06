@@ -89,6 +89,10 @@ python3 scripts/store.py export-history
 python3 scripts/library.py build
 ```
 
+## 平台关键词搜索
+
+可连接已有的小红书、B站选题搜索项目，按一周内、最多点赞、至少2000赞采集，审核相关性后导入。搜索结果默认留在候选文件，不自动计入参考。完整依赖、运行与审核方法见 [关键词搜索流程](docs/keyword-search.md)。当前不包含其他平台的关键词搜索器。
+
 ## 开发与反馈
 
 ```bash
